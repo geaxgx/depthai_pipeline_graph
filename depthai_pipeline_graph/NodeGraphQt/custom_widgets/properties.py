@@ -45,31 +45,35 @@ class PropColorPicker(BaseProperty):
         super(PropColorPicker, self).__init__(parent)
         self._color = (0, 0, 0)
         self._button = QtWidgets.QPushButton()
-        self._vector = PropVector3()
-        self._vector.set_value([0, 0, 0])
+        # self._vector = PropVector3()
+        # self._vector.set_value([0, 0, 0])
         self._update_color()
 
         self._button.clicked.connect(self._on_select_color)
-        self._vector.value_changed.connect(self._on_vector_changed)
+        # self._vector.value_changed.connect(self._on_vector_changed)
         layout = QtWidgets.QHBoxLayout(self)
         layout.setContentsMargins(0, 0, 0, 0)
         layout.addWidget(self._button, 0, QtCore.Qt.AlignLeft)
-        layout.addWidget(self._vector, 1, QtCore.Qt.AlignLeft)
+        # layout.addWidget(self._vector, 1, QtCore.Qt.AlignLeft)
 
-    def _on_vector_changed(self, o, value):
-        self._color = tuple(value)
-        self._update_color()
-        self.value_changed.emit(self.toolTip(), value)
+    # def _on_vector_changed(self, o, value):
+    #     self._color = tuple(value)
+    #     self._update_color()
+    #     self.value_changed.emit(self.toolTip(), value)
 
     def _on_select_color(self):
-        color = QtWidgets.QColorDialog.getColor(
-            QtGui.QColor.fromRgbF(*self.get_value())
-        )
+        options = QtWidgets.QColorDialog.ColorDialogOptions()
+        # options |= QtWidgets.QColorDialog.ShowAlphaChannel
+        options |= QtWidgets.QColorDialog.DontUseNativeDialog
+        dlg = QtWidgets.QColorDialog(QtGui.QColor.fromRgb(*self.get_value()))
+        color = dlg.getColor(
+            QtGui.QColor.fromRgb(*self.get_value()), options=options)
+
         if color.isValid():
             self.set_value(color.getRgb())
 
-    def _update_vector(self):
-        self._vector.set_value(list(self._color))
+    # def _update_vector(self):
+    #     self._vector.set_value(list(self._color))
 
     def _update_color(self):
         c = [int(max(min(i, 255), 0)) for i in self._color]
@@ -91,7 +95,7 @@ class PropColorPicker(BaseProperty):
         if value != self.get_value():
             self._color = value
             self._update_color()
-            self._update_vector()
+            # self._update_vector()
             self.value_changed.emit(self.toolTip(), value)
 
 
@@ -1043,7 +1047,7 @@ if __name__ == '__main__':
                                  widget_type=NODE_PROP_QLABEL)
             self.create_property('line_edit', 'Test Text',
                                  widget_type=NODE_PROP_QLINEEDIT)
-            self.create_property('color_picker', (0, 0, 255),
+            self.create_property('color_picker', (0, 0, 255,200),
                                  widget_type=NODE_PROP_COLORPICKER)
             self.create_property('integer', 10,
                                  widget_type=NODE_PROP_QSPINBOX)

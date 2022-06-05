@@ -117,7 +117,7 @@ class NodeViewer(QtWidgets.QGraphicsView):
 
         self._build_context_menus()
 
-        self.acyclic = True
+        self.acyclic = False
         self.pipe_collision = False
 
         self.LMB_state = False

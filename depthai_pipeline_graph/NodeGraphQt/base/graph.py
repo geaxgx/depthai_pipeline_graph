@@ -1679,6 +1679,54 @@ class NodeGraph(QtCore.QObject):
             NodeGraph._update_node_rank(node, nodes_rank, down_stream)
         return nodes_rank
 
+    @staticmethod
+    def _update_node_rank2(node, nodes_rank, down_stream=True, visited_connections=set()):
+        """
+        Recursive function for updating the node ranking.
+
+        Args:
+            node (NodeGraphQt.BaseNode): node to start from.
+            nodes_rank (dict): node ranking object to be updated.
+            down_stream (bool): true to rank down stram.
+        """
+        if down_stream:
+            node_values = node.connected_output_nodes().values()
+        else:
+            node_values = node.connected_input_nodes().values()
+
+        connected_nodes = set()
+        for nodes in node_values:
+            for n in nodes:
+                if (node, n) not in visited_connections:
+                    connected_nodes.add(n)
+                    visited_connections.add((node, n))
+
+        rank = nodes_rank[node] + 1
+        for n in connected_nodes:
+            if n not in nodes_rank:
+
+                nodes_rank[n] = rank
+            NodeGraph._update_node_rank2(n, nodes_rank, down_stream, visited_connections)
+
+    @staticmethod
+    def _compute_node_rank2(nodes, down_stream=True):
+        """
+        Compute the ranking of nodes.
+
+        Args:
+            nodes (list[NodeGraphQt.BaseNode]): nodes to start ranking from.
+            down_stream (bool): true to compute down stream.
+
+        Returns:
+            dict: {NodeGraphQt.BaseNode: node_rank, ...}
+        """
+        nodes_rank = {}
+        visited_connections = set()
+        for node in nodes:
+            nodes_rank[node] = 0
+            NodeGraph._update_node_rank2(node, nodes_rank, down_stream, visited_connections)
+        return nodes_rank
+
     def auto_layout_nodes(self, nodes=None, down_stream=True, start_nodes=None):
         """
         Auto layout the nodes in the node graph.
@@ -1725,22 +1773,28 @@ class NodeGraph(QtCore.QObject):
         try: # GX
             nodes_rank = NodeGraph._compute_node_rank(start_nodes, down_stream)
         except:
-            nodes_rank = {}
-            for i, n in enumerate(nodes):
-                nodes_rank[n] = i % 4
-            
+            print("Auto layout mode 1 failed\nTrying auto layout mode 2")
+            try:
+                nodes_rank = NodeGraph._compute_node_rank2(start_nodes, down_stream)
+            except:
+                print("Auto layout mode 2 failed\nUsing basic layout")
+                nodes_rank = {}
+                for i, n in enumerate(nodes):
+                    nodes_rank[n] = i % 4
         rank_map = {}
         for node, rank in nodes_rank.items():
             if rank in rank_map:
                 rank_map[rank].append(node)
             else:
                 rank_map[rank] = [node]
+        
 
         if NODE_LAYOUT_DIRECTION is NODE_LAYOUT_HORIZONTAL:
             current_x = 0
             node_height = 120
             for rank in sorted(range(len(rank_map)), reverse=not down_stream):
-                ranked_nodes = rank_map[rank]
+                ranked_nodes = rank_map.get(rank, None)
+                if ranked_nodes is None: continue
                 max_width = max([node.view.width for node in ranked_nodes])
                 current_x += max_width
                 current_y = 0

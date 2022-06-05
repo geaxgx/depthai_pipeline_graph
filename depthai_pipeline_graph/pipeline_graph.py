@@ -1,7 +1,6 @@
 #!/usr/bin/env python3
 
 def main():
-    print("====",__package__, __name__)
     import subprocess
     from argparse import ArgumentParser
     import os, signal
@@ -62,12 +61,12 @@ def main():
     run_parser = subparsers.add_parser("run", help="Run your depthai program to create the corresponding  pipeline graph")
     run_parser.add_argument('command', type=str, 
                 help="The command with its arguments between ' or \" (ex: python script.py -i file)")
-    run_parser.add_argument("-k", "--kill", action="store_true",
+    run_parser.add_argument("-dnk", "--do_not_kill", action="store_true",
                 help="Kill the command as soon as the schema string has been retrieved")
     run_parser.add_argument("-var", "--use_variable_names", action="store_true",
                 help="Use the variable names from the python code to name the graph nodes")
     run_parser.add_argument("-p", "--pipeline_name", type=str, default="pipeline",
-                help="Name of the pipeline variable in the python code")
+                help="Name of the pipeline variable in the python code (default=%(default)s)")
     run_parser.add_argument('-v', '--verbose', action="store_true",
                 help="Show on the console the command output")
 
@@ -112,6 +111,8 @@ def main():
         graph.load_session(args.json_file)
         graph.fit_to_selection()
         graph.set_zoom(-0.9)
+        graph.clear_selection()
+        graph.clear_undo_stack()
 
         app.exec_()
 
@@ -130,19 +131,21 @@ def main():
             node_name = []
         process = subprocess.Popen(command, shell=False, text=True, stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
 
-
+        schema_str = None
+        record_output = "" # Save the output and print it in case something went wrong
         while True:
             if process.poll() is not None: break
             line = process.stdout.readline()
+            record_output += line
             if args.verbose:
-                print(line)
+                print(line.rstrip('\n'))
             # we are looking for  a line:  ... [debug] Schema dump: {"connections":[{"node1Id":1...
             match = re.match(r'.* Schema dump: (.*)', line)
             if match:
                 schema_str = match.group(1)
                 print("Pipeline schema retrieved")
                 # print(schema_str)
-                if args.kill:
+                if not args.do_not_kill:
                     print("Terminating program...")
                     process.terminate()
             elif args.use_variable_names:
@@ -151,10 +154,11 @@ def main():
                     node_name.append(match.group(1))
         print("Program exited.")
 
-        
-
-                
-
+        if schema_str is None:
+            if not args.verbose:
+                print(record_output)
+            print("\nSomething went wrong, the schema could not be extracted")
+            exit(1)
         schema = json.loads(schema_str)
 
         dai_connections = schema['connections']
@@ -186,9 +190,10 @@ def main():
         # create the nodes.
         qt_nodes = {}
         for id,node in dai_nodes.items():
-            qt_nodes[id] = graph.create_node('dai.DepthaiNode', name=node['name'] , color=node_color[node['type']], text_color=(0,0,0))
+            qt_nodes[id] = graph.create_node('dai.DepthaiNode', name=node['name'] , color=node_color[node['type']], text_color=(0,0,0), push_undo=False)
             
         print("\nConnections:\n============")
+        i=0
         for c in dai_connections:
             src_node_id = c["node1Id"]
             src_node = qt_nodes[src_node_id]
@@ -202,8 +207,11 @@ def main():
                 src_node.add_output(name=src_port_name)
             if not dst_port_label in list(dst_node.inputs()):
                 dst_node.add_input(name=dst_port_label, color=dst_port_color, multi_input=True)
-            print(f"{dai_nodes[src_node_id]['name']}: {src_port_name} -> {dai_nodes[dst_node_id]['name']}: {dst_port_label}")
-            src_node.outputs()[src_port_name].connect_to(dst_node.inputs()[dst_port_label])
+            print(i,f"{dai_nodes[src_node_id]['name']}: {src_port_name} -> {dai_nodes[dst_node_id]['name']}: {dst_port_label}")
+            # if i == 8:
+            #     import pdb; pdb.set_trace()
+            src_node.outputs()[src_port_name].connect_to(dst_node.inputs()[dst_port_label], push_undo=False)
+            i+=1
 
         # Lock the ports
         graph.lock_all_ports()
@@ -215,6 +223,8 @@ def main():
         #     print("Auto Layout failed")
         graph.fit_to_selection()
         graph.set_zoom(-0.9)
+        graph.clear_selection()
+        graph.clear_undo_stack()
         app.exec_()
 
 if __name__ == "__main__":

@@ -324,7 +324,7 @@ class NodeGraphModel(object):
 
         self.nodes = {}
         self.session = ''
-        self.acyclic = True
+        self.acyclic = False
         self.pipe_collision = False
 
     def common_properties(self):

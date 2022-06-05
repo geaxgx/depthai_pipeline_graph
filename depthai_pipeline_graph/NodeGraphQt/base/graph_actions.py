@@ -23,9 +23,9 @@ def build_context_menu(graph):
     # "Edit" menu.
     # --------------------------------------------------------------------------
     edit_menu = graph_menu.add_menu('&Edit')
-    edit_menu.add_command("Add Backdrop Node", _add_backdrop_node, "B") # GX
+    # edit_menu.add_command("Add Backdrop Node", _add_backdrop_node, "B") # GX
 
-    edit_menu.add_separator()
+    # edit_menu.add_separator()
     edit_menu.add_command('Clear Undo History', _clear_undo)
     edit_menu.add_command('Show Undo History', _show_undo_view)
     edit_menu.add_separator()
