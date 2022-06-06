@@ -3,7 +3,7 @@
 A tool that dynamically creates graphs of [DepthAI pipelines](https://docs.luxonis.com/projects/api/en/latest/components/pipeline/). 
 <br>
 
-It is an experimental tool as it relies on the current mode of operation of the DepthAI library, which may change in the future.
+The tool is experimental as it relies on the current mode of operation of the DepthAI library, which may change in the future.
 
 ## How it works ?
 In the DepthAI context, a pipeline is a collection of nodes and links between them. 
@@ -22,10 +22,10 @@ What happens then, is that the pipeline configuration gets serialized to JSON an
 ...
 ```
 By analyzing the printed schema dump, it is possible to retrieve the nodes of the pipeline and their connections. That's exactly what the tool `pipeline_graph` is doing:
-* set  `DEPTHAI_LEVEL` to `debug`,
-* run your code,
-* catch the schema dump in the ouput stream of the code (by default the process running your code is then terminated),
-* parse the schema dump and create the corresponding graph using a modified version of the [NodeGraphQt](https://github.com/jchanvfx/NodeGraphQt) framework.
+* it sets  `DEPTHAI_LEVEL` to `debug`,
+* it runs your code,
+* it catches the schema dump in the ouput stream of the code (by default the tool then terminates the process running your code),
+* it parses the schema dump and creates the corresponding graph using a modified version of the [NodeGraphQt](https://github.com/jchanvfx/NodeGraphQt) framework.
 <br>
 
 
@@ -90,7 +90,7 @@ To build the corresponding pipeline graph, you simply use the following command 
 pipeline_graph "python main.py -cam"
 ```
 Note that as soon as the `pipeline_graph` program has catched the schema dump, your program is forced to be terminated. It means that your program will possibly not have time to display any windows (if it is something it is normally doing).
-If you prefer to let your program do its normal job, use the "-dnk" or "--do_not_kill" argument:
+If you prefer to let your program continue its normal job, use the "-dnk" or "--do_not_kill" argument:
 ```
 pipeline_graph "python main.py -cam" -dnk
 ```
@@ -99,15 +99,15 @@ Note how the `pipeline_graph` own arguments are placed outside the pair of quote
 
 
 
-**Naming of the nodes**
+**Nodes**
 
 By default, the node name in the grapth is its type (ColorCamera, ImageManip, NeuralNetwork,...) plus a index between parenthesis that corresponds to the order of creation of the node in the pipeline. For example, if the rgb camera is the first node you create, its name will be `"ColorCamera (0)"`.
 <br>
-When you have a lot of node of the same type, the index is not very helpful to distinguish between nodes. With the `-var` or `--use_variable_names` argument, the index number is replaced by the node variable name used in your code, as explained below:
+When you have a lot of nodes of the same type, the index is not very helpful to distinguish between nodes. You can then used the `-var` or `--use_variable_names` argument to get a more meaningful name: the index number is replaced by the node variable name used in your code. The tool must know the variable name of the pipeline. "pipeline" is the default. Use the `-p` or `--pipeline_name` argument to specify another name.
 
 <p align="center"> <img  src="media/pipeline_graph_naming.png" alt="Graph of the Human Machine Safety demo"></p>
 
-Note that when using this option, `pipeline_graph` will run slower to build the graph (it relies on the python module "trace").
+Note that when using this option, `pipeline_graph` will significantly run slower to build the graph (it relies on the python module "trace").
 
 **Ports**
 
@@ -116,7 +116,7 @@ For the input ports, the color represents the blocking state of the port (orange
 <p align="center"> <img  src="media/ports.png" alt="Graph of the Human Machine Safety demo"></p>
 <br>
 Once the graph is displayed, a few operations are possible.
-You can move the nodes and you probably will because there is a big chance that the auto-layout is not the most appropriate layout. You can rename a node by double-clicking its name. If you double-click in a node (apart the name zone), a window opens which let you change the node color and its name.
+You will probably reorgnize the nodes by moving them if you are not satisfied with the proposed auto-layout. You can rename a node by double-clicking its name. If you double-click in a node (apart the name zone), a window opens which let you change the node color and its name.
 By right-clicking in the graph, a menu appears: you can save your graph in a json file, load a previously save graph or do a few other self-explanatory operations.<br>
 <br>
 
