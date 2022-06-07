@@ -247,7 +247,7 @@ class NodeGraph(QtCore.QObject):
             prop_name (str): node property name.
             prop_value (object): python built in types.
         """
-        print("== graph.py > _on_property_bin_changed (217):",node_id, prop_name, prop_value)
+        # print("== graph.py > _on_property_bin_changed (217):",node_id, prop_name, prop_value)
         node = self.get_node_by_id(node_id)
 
         # prevent signals from causing a infinite loop.

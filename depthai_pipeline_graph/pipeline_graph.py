@@ -16,6 +16,7 @@ def main():
         "ColorCamera": (241,148,138),
         "MonoCamera": (243,243,243),
         "ImageManip": (174,214,241),
+        "VideoEncoder": (190,190,190),
 
         "NeuralNetwork": (171,235,198),
         "DetectionNetwork": (171,235,198),
@@ -41,6 +42,8 @@ def main():
         "ObjectTracker": (248,196,113), 
         "IMU": (248,196,113)
     }
+
+    default_node_color = (190,190,190) # For node types that does not appear in 'node_color'
 
 
     class DepthaiNode(BaseNode):
@@ -190,7 +193,7 @@ def main():
         # create the nodes.
         qt_nodes = {}
         for id,node in dai_nodes.items():
-            qt_nodes[id] = graph.create_node('dai.DepthaiNode', name=node['name'] , color=node_color[node['type']], text_color=(0,0,0), push_undo=False)
+            qt_nodes[id] = graph.create_node('dai.DepthaiNode', name=node['name'], color=node_color.get(node['type'], default_node_color), text_color=(0,0,0), push_undo=False)
             
         print("\nConnections:\n============")
         i=0
