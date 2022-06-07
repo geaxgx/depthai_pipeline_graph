@@ -65,7 +65,7 @@ def main():
     run_parser.add_argument('command', type=str, 
                 help="The command with its arguments between ' or \" (ex: python script.py -i file)")
     run_parser.add_argument("-dnk", "--do_not_kill", action="store_true",
-                help="Kill the command as soon as the schema string has been retrieved")
+                help="Don't terminate the command when the schema string has been retrieved")
     run_parser.add_argument("-var", "--use_variable_names", action="store_true",
                 help="Use the variable names from the python code to name the graph nodes")
     run_parser.add_argument("-p", "--pipeline_name", type=str, default="pipeline",
