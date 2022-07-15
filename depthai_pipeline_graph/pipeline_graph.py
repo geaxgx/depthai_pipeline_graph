@@ -74,8 +74,8 @@ def main():
                 help="Show on the console the command output")
 
     load_parser = subparsers.add_parser("load", help="Load a previously saved pipeline graph")
-    load_parser.add_argument("json_file", 
-                help="Path of the .json file")
+    load_parser.add_argument("json_file", help="Path of the .json file")
+
     args = parser.parse_args()
 
     # handle SIGINT to make the app terminate on CTRL+C
@@ -120,49 +120,57 @@ def main():
         app.exec_()
 
     elif args.action == "run":
-        os.environ["PYTHONUNBUFFERED"] = "1"
-        os.environ["DEPTHAI_LEVEL"] = "debug"
-            
-        command = args.command.split()
-        if args.use_variable_names:
-            # If command starts with "python", we remove it
-            if "python" in command[0]:
-                command.pop(0)
+        if os.path.exists(args.command): # If path, it's serialized pipeline json
+            print("Serielized DepthAI's pipeline JSON found")
+            # Load pipeline schema from json
+            with open(args.command) as f:
+                schema = json.loads(f.read())
+        else:
+            os.environ["PYTHONUNBUFFERED"] = "1"
+            os.environ["DEPTHAI_LEVEL"] = "debug"
+                
+            command = args.command.split()
+            if args.use_variable_names:
+                # If command starts with "python", we remove it
+                if "python" in command[0]:
+                    command.pop(0)
 
-            command = "python -m trace -t ".split() + command
-            pipeline_create_re = f'.*:\s*(.*)\s*=\s*{args.pipeline_name}\.create.*'
-            node_name = []
-        process = subprocess.Popen(command, shell=False, text=True, stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
+                command = "python -m trace -t ".split() + command
+                pipeline_create_re = f'.*:\s*(.*)\s*=\s*{args.pipeline_name}\.create.*'
+                node_name = []
+            process = subprocess.Popen(command, shell=False, text=True, stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
 
-        schema_str = None
-        record_output = "" # Save the output and print it in case something went wrong
-        while True:
-            if process.poll() is not None: break
-            line = process.stdout.readline()
-            record_output += line
-            if args.verbose:
-                print(line.rstrip('\n'))
-            # we are looking for  a line:  ... [debug] Schema dump: {"connections":[{"node1Id":1...
-            match = re.match(r'.* Schema dump: (.*)', line)
-            if match:
-                schema_str = match.group(1)
-                print("Pipeline schema retrieved")
-                # print(schema_str)
-                if not args.do_not_kill:
-                    print("Terminating program...")
-                    process.terminate()
-            elif args.use_variable_names:
-                match = re.match(pipeline_create_re, line)
+            schema_str = None
+            record_output = "" # Save the output and print it in case something went wrong
+            while True:
+                if process.poll() is not None: break
+                line = process.stdout.readline()
+                record_output += line
+                if args.verbose:
+                    print(line.rstrip('\n'))
+                # we are looking for  a line:  ... [debug] Schema dump: {"connections":[{"node1Id":1...
+                match = re.match(r'.* Schema dump: (.*)', line)
                 if match:
-                    node_name.append(match.group(1))
-        print("Program exited.")
+                    schema_str = match.group(1)
+                    print("Pipeline schema retrieved")
+                    # print(schema_str)
+                    if not args.do_not_kill:
+                        print("Terminating program...")
+                        process.terminate()
+                elif args.use_variable_names:
+                    match = re.match(pipeline_create_re, line)
+                    if match:
+                        node_name.append(match.group(1))
+            print("Program exited.")
 
-        if schema_str is None:
-            if not args.verbose:
-                print(record_output)
-            print("\nSomething went wrong, the schema could not be extracted")
-            exit(1)
-        schema = json.loads(schema_str)
+            if schema_str is None:
+                if not args.verbose:
+                    print(record_output)
+                print("\nSomething went wrong, the schema could not be extracted")
+                exit(1)
+            schema = json.loads(schema_str)
+
+        # Schema parsed
 
         dai_connections = schema['connections']
         dai_nodes = {} # key = id, value = dict with keys 'type', 'blocking', 'queue_size' and 'name' (if args.use_variable_name)
@@ -188,7 +196,7 @@ def main():
             print(f"{dai_nodes[id]['name']}")
 
 
-    
+
 
         # create the nodes.
         qt_nodes = {}
