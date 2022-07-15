@@ -120,7 +120,7 @@ def main():
         app.exec_()
 
     elif args.action == "run":
-        if os.path.exists(args.command): # If path, it's serialized pipeline json
+        if os.path.exists(args.command) and args.command.endswith('.json'): # If path, it's serialized pipeline json
             print("Serielized DepthAI's pipeline JSON found")
             # Load pipeline schema from json
             with open(args.command) as f:
