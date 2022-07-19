@@ -5,7 +5,7 @@ with open('requirements.txt') as f:
 
 setup(
     name="depthai_pipeline_graph",
-    version="0.0.2",
+    version="0.0.3",
     packages=[*find_packages()],
     entry_points={
         'console_scripts': [
