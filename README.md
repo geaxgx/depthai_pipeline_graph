@@ -4,7 +4,7 @@ A tool that dynamically creates graphs of [DepthAI pipelines](https://docs.luxon
 <br>
 I have created this tool to help me in documenting some of my DepthAI repositories, but it is also useful to quickly get some high-level view of existing DepthAI programs without reading the code.
 <br> 
-This tool is experimental as it relies on the current mode of operation of the DepthAI library, which may change in the future.
+
 
 <p align="center"> <img  src="media/graph_human_machine_safety.png" alt="Graph of depthai-experiments/gen2-human-machine-safety"></p>
 
@@ -39,6 +39,15 @@ By analyzing the printed schema dump, it is then possible to retrieve the nodes 
 ```
 pip install git+https://github.com/geaxgx/depthai_pipeline_graph.git
 ```
+If not already present, the command above will install the python module Qt.py. Qt.py enables you to write software that runs on any of the 4 supported bindings - PySide2, PyQt5, PySide and PyQt4. If none of these binding is installed, you will get an error message when running `pipeline_graph`: 
+```
+ImportError: No Qt binding were found. 
+```
+If you don't have a preference for any particular binding, you can just choose to install PySide2:
+```
+pip install PySide2
+```
+
 
 ## Run
 
