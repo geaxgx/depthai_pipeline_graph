@@ -103,12 +103,12 @@ python main.py -cam
 ```
 To build the corresponding pipeline graph, you simply use the following command (the quotes are important):
 ```
-pipeline_graph "python main.py -cam"
+pipeline_graph run "python main.py -cam"
 ```
 Note that as soon as the `pipeline_graph` program has catched the schema dump, your program is forced to be terminated. It means that your program will possibly not have time to display any windows (if it is something it is normally doing).
 If you prefer to let your program continue its normal job, use the "-dnk" or "--do_not_kill" argument:
 ```
-pipeline_graph "python main.py -cam" -dnk
+pipeline_graph run "python main.py -cam" -dnk
 ```
 Note how the `pipeline_graph` own arguments are placed outside the pair of quotes, whereas your program arguments are inside. 
 <br>When using the `-dnk` option, the pipeline graph is displayed only after you quit your program.
