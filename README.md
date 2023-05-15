@@ -1,5 +1,8 @@
 # DepthAI Pipeline Graph [Experimental]
 
+**WARNING! There is more recent version of this tool there: https://github.com/luxonis/depthai_pipeline_graph
+<br>You should use the version of Luxonis as some features have been updated or added.**
+
 A tool that dynamically creates graphs of [DepthAI pipelines](https://docs.luxonis.com/projects/api/en/latest/components/pipeline/). 
 <br>
 I have created this tool to help me in documenting some of my DepthAI repositories, but it is also useful to quickly get some high-level view of existing DepthAI programs without reading the code.
